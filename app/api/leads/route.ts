@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-// import { getMongoDb } from "@/lib/db/mongo";
-// import { MongoLeadRepository } from "@/lib/repositories/LeadRepository";
-// import { LeadService } from "@/lib/services/LeadService";
-// import { LeadClassifier } from "@/lib/services/LeadClassifier";
+import { getMongoDb } from "@/lib/db/mongo";
+import { MongoLeadRepository } from "@/lib/repositories/LeadRepository";
+import { LeadService } from "@/lib/services/LeadService";
+import { LeadClassifier } from "@/lib/services/LeadClassifier";
 
 export async function POST(req: Request) {
   try {
@@ -17,29 +17,24 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("Recebendo novo lead:", { companyName, cnpj, averageBill, email });
+    console.log("Recebendo novo lead:", { companyName, cnpj, averageBill, email }); 
 
-    return NextResponse.json({ success: true, body }, { status: 201 });
-    
-    
+    const db = await getMongoDb();
+    const collection = db.collection("leads") as any;
 
+    const repository = new MongoLeadRepository(collection);
+    const classifier = new LeadClassifier();
 
-    // const db = await getMongoDb();
-    // const collection = db.collection("leads") as any;
+    const service = new LeadService(repository, classifier);
 
-    // const repository = new MongoLeadRepository(collection);
-    // const classifier = new LeadClassifier();
+    const lead = await service.createLead({
+      companyName,
+      cnpj,
+      averageBill: Number(averageBill),
+      email,
+    });
 
-    // const service = new LeadService(repository, classifier);
-
-    // const lead = await service.createLead({
-    //   companyName,
-    //   cnpj,
-    //   averageBill: Number(averageBill),
-    //   email,
-    // });
-
-    // return NextResponse.json({ success: true, lead }, { status: 201 });
+    return NextResponse.json({ success: true, lead }, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar lead:", error);
 

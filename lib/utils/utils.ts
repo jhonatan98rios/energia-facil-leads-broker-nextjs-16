@@ -9,12 +9,14 @@ export function formatCNPJ(value: string) {
 }
 
 export function formatCurrency(value: string) {
-  const numeric = value.replace(/\D/g, "");
-  if (!numeric) return "";
+  const digits = value.replace(/\D/g, "");
 
-  return Number(numeric).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 0,
-  });
+  if (!digits) return "";
+
+  // Limite de segurança (ex: até 9 dígitos = 999 milhões)
+  const limited = digits.slice(0, 9);
+
+  const number = limited.replace(/^0+/, "");
+
+  return "R$ " + number.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }

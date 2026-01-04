@@ -21,6 +21,7 @@ export interface Lead {
 
 export interface LeadRepository {
   create(data: Lead): Promise<Lead>;
+  findAll(): Promise<Lead[]>;
 }
 
 export class MongoLeadRepository implements LeadRepository {
@@ -29,5 +30,12 @@ export class MongoLeadRepository implements LeadRepository {
   async create(data: Lead): Promise<Lead> {
     await this.collection.insertOne(data);
     return data;
+  }
+
+  async findAll(): Promise<Lead[]> {
+    return this.collection
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
   }
 }
