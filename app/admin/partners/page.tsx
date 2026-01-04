@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getMongoDb } from "@/lib/db/mongo";
 import { Partner } from "@/lib/repositories/PartnerRepository";
 
