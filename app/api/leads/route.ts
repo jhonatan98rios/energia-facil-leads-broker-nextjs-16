@@ -6,9 +6,22 @@ import { LeadClassifier } from "@/lib/services/LeadClassifier";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const formData = await req.formData();
 
-    const { companyName, cnpj, averageBill, email } = body;
+    const companyName = formData.get("companyName") as string;
+    const cnpj = formData.get("cnpj") as string;
+    const averageBill = formData.get("averageBill") as string;
+    const email = formData.get("email") as string;
+    const file = formData.get("file") as File;
+    const extractedDataRaw = formData.get("extractedData") as string | null;
+    let extractedData: any = null;
+    if (extractedDataRaw) {
+      try {
+        extractedData = JSON.parse(extractedDataRaw as string);
+      } catch (e) {
+        return NextResponse.json({ error: "extractedData JSON inválido" }, { status: 400 });
+      }
+    }
 
     if (!companyName || !cnpj || !averageBill || !email) {
       return NextResponse.json(
@@ -17,7 +30,28 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("Recebendo novo lead:", { companyName, cnpj, averageBill, email }); 
+    if (!file) {
+      return NextResponse.json(
+        { error: "Arquivo de conta de luz é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Recebendo novo lead:", { companyName, cnpj, averageBill, email });
+    
+    if (file) {
+      console.log("Arquivo recebido:", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
+    } else {
+      console.log("Nenhum arquivo foi enviado");
+    } 
+
+    if (extractedData) {
+      console.log("Dados extraídos recebidos:", extractedData);
+    }
 
     const db = await getMongoDb();
     const collection = db.collection("leads") as any;
@@ -34,7 +68,7 @@ export async function POST(req: Request) {
       email,
     });
 
-    return NextResponse.json({ success: true, lead }, { status: 201 });
+    return NextResponse.json({ success: true, lead, extractedData }, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar lead:", error);
 

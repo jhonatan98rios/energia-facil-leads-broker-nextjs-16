@@ -2,6 +2,7 @@
 
 import { formatCNPJ, formatCurrency } from "@/lib/utils/utils";
 import { useRef, useState, useTransition } from "react";
+import FileUpload from "./FileUpload";
 
 export default function FormSection() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -14,17 +15,21 @@ export default function FormSection() {
   const [cnpj, setCnpj] = useState<string>("");
   const [bill, setBill] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null);
+  const [extractedData, setExtractedData] = useState<any | null>(null);
+
+  // extractedData will hold the result returned by the extraction API
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const formDataFromDOM = new FormData(event.currentTarget);
 
     const payload = {
-      companyName: formData.get("company"),
+      companyName: formDataFromDOM.get("company"),
       cnpj: cnpj.replace(/\D/g, ""),
       averageBill: Number(bill.replace(/\D/g, "")),
-      email: formData.get("email"),
+      email: formDataFromDOM.get("email"),
     };
 
     if (payload.cnpj.length !== 14) {
@@ -39,14 +44,34 @@ export default function FormSection() {
       return;
     }
 
+    if (!file) {
+      setStatus("error");
+      setMessage("Por favor, anexe a conta de luz.");
+      return;
+    }
+
     startTransition(async () => {
       try {
+        // Criar FormData para multipart upload
+        const multipartFormData = new FormData();
+        multipartFormData.append("companyName", payload.companyName as string);
+        multipartFormData.append("cnpj", payload.cnpj);
+        multipartFormData.append("averageBill", payload.averageBill.toString());
+        multipartFormData.append("email", payload.email as string);
+
+        // Adicionar arquivo se existir
+        if (file) {
+          multipartFormData.append("file", file);
+        }
+
+        // Adicionar dados extraídos (JSON) se existirem
+        if (extractedData) {
+          multipartFormData.append("extractedData", JSON.stringify(extractedData));
+        }
+
         const response = await fetch("/api/leads", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
+          body: multipartFormData,
         });
 
         if (!response.ok) {
@@ -58,6 +83,7 @@ export default function FormSection() {
         formRef.current?.reset();
         setBill("");
         setCnpj("");
+        setFile(null);
 
       } catch (error) {
         setStatus("error");
@@ -126,15 +152,6 @@ export default function FormSection() {
                 <label htmlFor="cnpj" className="label">
                   CNPJ
                 </label>
-                {/* <input
-                  id="cnpj"
-                  name="cnpj"
-                  type="text"
-                  className="input"
-                  placeholder="00.000.000/0001-00"
-                  inputMode="numeric"
-                  required
-                /> */}
                 <input
                   id="cnpj"
                   name="cnpj"
@@ -152,14 +169,6 @@ export default function FormSection() {
                 <label htmlFor="bill" className="label">
                   Valor médio mensal da conta de energia
                 </label>
-                {/* <input
-                  id="bill"
-                  name="bill"
-                  type="text"
-                  className="input"
-                  placeholder="Ex: R$ 12.000"
-                  required
-                /> */}
                 <input
                   id="bill"
                   name="bill"
@@ -187,6 +196,26 @@ export default function FormSection() {
                   placeholder="seu@email.com"
                   required
                 />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="label">Anexar conta de luz</label>
+
+                <FileUpload
+                  onExtracted={(data, uploadedFile) => {
+                    setExtractedData(data);
+                    setFile(uploadedFile);
+                  }}
+                />
+
+                <p className="helper">PDF, JPG, PNG — máximo 5MB por arquivo.</p>
+
+                {extractedData && (
+                  <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+                    <strong className="block text-sm text-gray-800 mb-1">Dados extraídos:</strong>
+                    <pre className="whitespace-pre-wrap overflow-x-auto text-xs">{JSON.stringify(extractedData, null, 2)}</pre>
+                  </div>
+                )}
               </div>
 
               <button
