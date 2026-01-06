@@ -1,10 +1,12 @@
 import { Collection } from "mongodb";
+import type { ExtractedBill } from "@/lib/clients/OpenAIExtractorClient";
 
 export interface CreateLeadDTO {
   companyName: string;
   cnpj: string;
   averageBill: number;
   email: string;
+  extractedData?: ExtractedBill | null;
 }
 
 export interface Lead {
@@ -12,6 +14,7 @@ export interface Lead {
   cnpj: string;
   averageBill: number;
   email: string;
+  extractedData?: ExtractedBill | null;
 
   tier: "LOW" | "MEDIUM" | "HIGH";
   classificationReason: string;

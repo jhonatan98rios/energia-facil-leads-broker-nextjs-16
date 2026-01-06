@@ -1,7 +1,8 @@
 import { convertPdfToPng } from "@/lib/utils/pdfToPng";
+import { z } from "zod";
 
 export interface ILLMClient {
-  extractFromFile(file: File, prompt: string): Promise<any>;
+  extractFromFile(file: File, prompt: string): Promise<ExtractedBill>;
 }
 
 export class OpenAIExtractorClient implements ILLMClient {
@@ -14,16 +15,34 @@ export class OpenAIExtractorClient implements ILLMClient {
   async extractFromFile(file: File, prompt: string) {
     if (!this.apiKey) {
       // Return simulated response when no API key provided
-      return {
-        simulated: true,
-        prompt,
-        file: { name: file.name, size: file.size, type: file.type },
-        extracted: {
-          supplier: "Empresa Exemplo",
-          dueDate: "2026-01-15",
-          amount: "R$ 1.234,56",
-        },
+      const simulated = {
+        distribuidora: "Empresa Exemplo",
+        numero_instalacao: null,
+        cnpj_titular: null,
+        grupo_tarifario: null,
+        tensao_fornecimento: null,
+        tipo_ligacao: null,
+
+        consumo_medio_kwh: null,
+        consumo_ultimo_mes_kwh: null,
+        historico_consumo_kwh: null,
+
+        demanda_contratada_kw: null,
+        demanda_medida_kw: null,
+
+        valor_total_fatura: 1234.56,
+        valor_energia: null,
+        bandeira_tarifaria: null,
+
+        periodo_referencia: null,
       };
+
+      const validated = OpenAIExtractorClient.schema.safeParse(simulated);
+      if (!validated.success) {
+        throw new Error("Simulated extractor produced invalid data");
+      }
+
+      return validated.data;
     }
 
     // If PDF, delegate conversion (including any streaming fallback) to util
@@ -133,6 +152,46 @@ export class OpenAIExtractorClient implements ILLMClient {
     // Parse the JSON
     const extracted = JSON.parse(jsonString);
 
-    return extracted;
+    // Validate extracted payload with Zod schema before returning
+    const validation = OpenAIExtractorClient.schema.safeParse(extracted);
+    if (!validation.success) {
+      // Attach parsing errors to thrown error to help debugging
+      const err = new Error("Extração inválida: formato diferente do esperado");
+      // @ts-ignore - attach details for debugging/logging
+      err.details = validation.error.format();
+      throw err;
+    }
+
+    return validation.data;
   }
+
+  // Zod schema describing the expected extraction result
+  static schema = z.object({
+    distribuidora: z.string().nullable(),
+    numero_instalacao: z.string().nullable(),
+    cnpj_titular: z.string().nullable(),
+    grupo_tarifario: z.union([z.literal("A"), z.literal("B")]).nullable(),
+    tensao_fornecimento: z.string().nullable(),
+    tipo_ligacao: z.union([
+      z.literal("MONOFASICA"),
+      z.literal("BIFASICA"),
+      z.literal("TRIFASICA"),
+    ]).nullable(),
+
+    consumo_medio_kwh: z.number().nullable(),
+    consumo_ultimo_mes_kwh: z.number().nullable(),
+    historico_consumo_kwh: z.array(z.number()).nullable(),
+
+    demanda_contratada_kw: z.number().nullable(),
+    demanda_medida_kw: z.number().nullable(),
+
+    valor_total_fatura: z.number().nullable(),
+    valor_energia: z.number().nullable(),
+    bandeira_tarifaria: z.string().nullable(),
+
+    periodo_referencia: z.string().nullable(),
+  });
 }
+
+// Export a TypeScript type for the validated extracted bill structure
+export type ExtractedBill = z.infer<typeof OpenAIExtractorClient.schema>;

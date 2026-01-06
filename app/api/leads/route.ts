@@ -23,7 +23,14 @@ export async function POST(req: Request) {
       }
     }
 
-    if (!companyName || !cnpj || !averageBill || !email) {
+    if (
+      !companyName || 
+      !cnpj || 
+      !averageBill || 
+      !email || 
+      !extractedData || 
+      !extractedData.extracted
+    ) {
       return NextResponse.json(
         { error: "Dados inválidos" },
         { status: 400 }
@@ -38,19 +45,13 @@ export async function POST(req: Request) {
     }
 
     console.log("Recebendo novo lead:", { companyName, cnpj, averageBill, email });
-    
-    if (file) {
-      console.log("Arquivo recebido:", {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
-    } else {
-      console.log("Nenhum arquivo foi enviado");
-    } 
 
-    if (extractedData) {
-      console.log("Dados extraídos recebidos:", extractedData);
+    // Normalize incoming payloads that wrap the real extraction inside
+    // an envelope like { success, message, file, extracted }
+    if (extractedData && typeof extractedData === "object") {
+      if ("extracted" in extractedData && extractedData.extracted != null) {
+        extractedData = (extractedData as any).extracted;
+      }
     }
 
     const db = await getMongoDb();
@@ -66,6 +67,7 @@ export async function POST(req: Request) {
       cnpj,
       averageBill: Number(averageBill),
       email,
+      extractedData: extractedData ?? null,
     });
 
     return NextResponse.json({ success: true, lead, extractedData }, { status: 201 });
