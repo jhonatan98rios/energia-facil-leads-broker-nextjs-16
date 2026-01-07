@@ -42,6 +42,24 @@ export default async function AdminLeadsPage() {
               <th className="border px-3 py-2 text-left">Bandeira</th>
               <th className="border px-3 py-2 text-left">Período</th>
               <th className="border px-3 py-2 text-left">Criado em</th>
+
+              {/* OpenCNPJ enrichment columns */}
+              <th className="border px-3 py-2 text-left bg-blue-50">Razão Social</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Nome Fantasia</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Situação Cadastral</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Data Início</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Porte</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Capital Social</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">CNAE Principal</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">CNAEs Secundários</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Natureza Jurídica</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Tipo (Matriz/Filial)</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Endereço</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Município</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">UF</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">E-mail Comercial</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Telefones</th>
+              <th className="border px-3 py-2 text-left bg-blue-50">Sócios</th>
             </tr>
           </thead>
 
@@ -94,6 +112,24 @@ export default async function AdminLeadsPage() {
                 <td className="border px-3 py-2 whitespace-nowrap">
                   {new Date(lead.createdAt).toLocaleString("pt-BR")}
                 </td>
+
+                {/* OpenCNPJ enrichment columns */}
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.razao_social ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.nome_fantasia ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.situacao_cadastral ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.data_inicio_atividade ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.porte_empresa ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.capital_social ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.cnae_principal ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{Array.isArray(lead.openCnpjData?.cnaes_secundarios) ? lead.openCnpjData.cnaes_secundarios.join(", ") : '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.natureza_juridica ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.tipo ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.endereco ? `${lead.openCnpjData.endereco.logradouro}, ${lead.openCnpjData.endereco.numero} ${lead.openCnpjData.endereco.complemento ?? ''} - ${lead.openCnpjData.endereco.bairro ?? ''} - ${lead.openCnpjData.endereco.cep ?? ''}` : '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.endereco?.municipio ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.endereco?.uf ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{lead.openCnpjData?.email ?? '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{Array.isArray(lead.openCnpjData?.telefones) ? lead.openCnpjData.telefones.map((t: { ddd: any; numero: any; }) => `${t.ddd} ${t.numero}`).join(", ") : '-'}</td>
+                <td className="border px-3 py-2 bg-blue-50">{Array.isArray(lead.openCnpjData?.socios) ? lead.openCnpjData.socios.map((s: { nome: any; qualificacao: any; }) => `${s.nome} (${s.qualificacao})`).join(", ") : '-'}</td>
               </tr>
             ))}
           </tbody>

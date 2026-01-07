@@ -9,6 +9,7 @@ que estejam explicitamente presentes no documento.
 
 ⚠️ Regras importantes:
 - NÃO invente valores
+- Verifique cuidadosamente cada campo, principalmente valores monetários
 - NÃO estime dados que não estejam visíveis
 - Se um campo não existir ou não puder ser identificado com segurança, retorne null
 - Retorne APENAS um objeto JSON válido

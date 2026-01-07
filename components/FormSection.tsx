@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCNPJ, formatCurrency } from "@/lib/utils/utils";
+import { formatCNPJ } from "@/lib/utils/utils";
 import { useRef, useState, useTransition } from "react";
 import FileUpload from "./FileUpload";
 
@@ -13,34 +13,24 @@ export default function FormSection() {
   >("idle");
 
   const [cnpj, setCnpj] = useState<string>("");
-  const [bill, setBill] = useState<string>("");
   const [message, setMessage] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [extractedData, setExtractedData] = useState<any | null>(null);
 
   // extractedData will hold the result returned by the extraction API
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formDataFromDOM = new FormData(event.currentTarget);
 
     const payload = {
-      companyName: formDataFromDOM.get("company"),
       cnpj: cnpj.replace(/\D/g, ""),
-      averageBill: Number(bill.replace(/\D/g, "")),
       email: formDataFromDOM.get("email"),
     };
 
     if (payload.cnpj.length !== 14) {
       setStatus("error");
       setMessage("CNPJ inválido.");
-      return;
-    }
-
-    if (!payload.averageBill || payload.averageBill <= 0) {
-      setStatus("error");
-      setMessage("Informe um valor válido de conta de energia.");
       return;
     }
 
@@ -54,9 +44,7 @@ export default function FormSection() {
       try {
         // Criar FormData para multipart upload
         const multipartFormData = new FormData();
-        multipartFormData.append("companyName", payload.companyName as string);
         multipartFormData.append("cnpj", payload.cnpj);
-        multipartFormData.append("averageBill", payload.averageBill.toString());
         multipartFormData.append("email", payload.email as string);
 
         // Adicionar arquivo se existir
@@ -81,7 +69,6 @@ export default function FormSection() {
         setStatus("success");
         setMessage("Simulação enviada com sucesso!");
         formRef.current?.reset();
-        setBill("");
         setCnpj("");
         setFile(null);
 
@@ -134,21 +121,8 @@ export default function FormSection() {
               className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6"
               aria-label="Formulário de simulação de economia de energia"
             >
-              <div>
-                <label htmlFor="company" className="label">
-                  Nome da empresa
-                </label>
-                <input
-                  id="company"
-                  name="company"
-                  type="text"
-                  className="input"
-                  placeholder="Ex: Metalúrgica ABC Ltda"
-                  required
-                />
-              </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label htmlFor="cnpj" className="label">
                   CNPJ
                 </label>
@@ -165,24 +139,8 @@ export default function FormSection() {
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label htmlFor="bill" className="label">
-                  Valor médio mensal da conta de energia
-                </label>
-                <input
-                  id="bill"
-                  name="bill"
-                  type="text"
-                  className="input"
-                  placeholder="Ex: R$ 12.000"
-                  value={bill}
-                  onChange={(e) => setBill(formatCurrency(e.target.value))}
-                  required
-                />
-                <p className="helper">
-                  Considerar apenas energia elétrica (últimos 3 meses).
-                </p>
-              </div>
+
+              {/* Valor da conta será extraído automaticamente da conta de luz */}
 
               <div className="md:col-span-2">
                 <label htmlFor="email" className="label">

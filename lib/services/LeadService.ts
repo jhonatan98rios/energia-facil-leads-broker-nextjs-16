@@ -1,4 +1,5 @@
 import { LeadRepository, CreateLeadDTO, Lead } from "@/lib/repositories/LeadRepository";
+import { formatOpenCNPJData } from "../utils/openCNPJEnrichment";
 import { LeadClassifier } from "./LeadClassifier";
 
 export class LeadService {
@@ -18,5 +19,21 @@ export class LeadService {
     };
 
     return this.repository.create(lead);
+  }
+
+  async enrichWithOpenCNPJ(cnpj: string) {
+    try {
+      const cleanCnpj = cnpj.replace(/\D/g, "");
+      const url = `https://api.opencnpj.org/${cleanCnpj}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Erro ao buscar dados do OpenCNPJ");
+      const rawCnpjData = await res.json();
+      const openCnpjData = formatOpenCNPJData(rawCnpjData);
+      console.log("[OpenCNPJ] Dados enriquecidos:", openCnpjData);
+      return openCnpjData;
+    } catch (err) {
+      console.warn("[OpenCNPJ] Falha ao enriquecer lead:", err);
+      return null;
+    }
   }
 }

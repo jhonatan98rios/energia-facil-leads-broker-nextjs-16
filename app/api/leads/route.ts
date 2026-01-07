@@ -8,9 +8,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
 
-    const companyName = formData.get("companyName") as string;
     const cnpj = formData.get("cnpj") as string;
-    const averageBill = formData.get("averageBill") as string;
     const email = formData.get("email") as string;
     const file = formData.get("file") as File;
     const extractedDataRaw = formData.get("extractedData") as string | null;
@@ -24,9 +22,7 @@ export async function POST(req: Request) {
     }
 
     if (
-      !companyName || 
       !cnpj || 
-      !averageBill || 
       !email || 
       !extractedData || 
       !extractedData.extracted
@@ -44,10 +40,8 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("Recebendo novo lead:", { companyName, cnpj, averageBill, email });
+    console.log("Recebendo novo lead:", { cnpj, email });
 
-    // Normalize incoming payloads that wrap the real extraction inside
-    // an envelope like { success, message, file, extracted }
     if (extractedData && typeof extractedData === "object") {
       if ("extracted" in extractedData && extractedData.extracted != null) {
         extractedData = (extractedData as any).extracted;
@@ -62,15 +56,28 @@ export async function POST(req: Request) {
 
     const service = new LeadService(repository, classifier);
 
+    // Enriquecimento de dados
+    const openCnpjData = await service.enrichWithOpenCNPJ(cnpj);
+
+    // Nome da empresa do OpenCNPJ, valor da conta do arquivo extraído
+    const companyName = openCnpjData?.razao_social || "";
+    // Tenta pegar o valor da conta de luz do campo extraído (ajuste conforme seu schema)
+    let averageBill = null;
+    if (extractedData && typeof extractedData === "object") {
+      // Tenta pegar valor total da fatura, se existir
+      averageBill = extractedData.valor_total_fatura || extractedData.valor_energia || null;
+    }
+
     const lead = await service.createLead({
       companyName,
       cnpj,
-      averageBill: Number(averageBill),
+      averageBill: averageBill ? Number(averageBill) : 0,
       email,
       extractedData: extractedData ?? null,
+      openCnpjData: openCnpjData ?? null,
     });
 
-    return NextResponse.json({ success: true, lead, extractedData }, { status: 201 });
+    return NextResponse.json({ success: true, lead, extractedData, openCnpjData }, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar lead:", error);
 
