@@ -10,6 +10,8 @@ export async function POST(req: Request) {
 
     const cnpj = formData.get("cnpj") as string;
     const email = formData.get("email") as string;
+    const contactName = formData.get("contactName") as string;
+    const contactRole = formData.get("contactRole") as string;
     const file = formData.get("file") as File;
     const extractedDataRaw = formData.get("extractedData") as string | null;
     let extractedData: any = null;
@@ -40,7 +42,7 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("Recebendo novo lead:", { cnpj, email });
+    console.log("Recebendo novo lead:", { cnpj, email, contactName, contactRole });
 
     if (extractedData && typeof extractedData === "object") {
       if ("extracted" in extractedData && extractedData.extracted != null) {
@@ -73,6 +75,8 @@ export async function POST(req: Request) {
       cnpj,
       averageBill: averageBill ? Number(averageBill) : 0,
       email,
+      contactName,
+      contactRole,
       extractedData: extractedData ?? null,
       openCnpjData: openCnpjData ?? null,
     });

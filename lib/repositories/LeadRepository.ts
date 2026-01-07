@@ -7,6 +7,8 @@ export interface CreateLeadDTO {
   cnpj: string;
   averageBill: number;
   email: string;
+  contactName: string;
+  contactRole: string;
   extractedData?: ExtractedBill | null;
   openCnpjData?: any | null;
 }
@@ -17,6 +19,8 @@ export interface Lead {
   cnpj: string;
   averageBill: number;
   email: string;
+  contactName: string;
+  contactRole: string;
   extractedData?: ExtractedBill | null;
   openCnpjData?: any | null;
 

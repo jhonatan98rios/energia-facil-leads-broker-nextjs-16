@@ -14,6 +14,8 @@ export default function FormSection() {
 
   const [cnpj, setCnpj] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+  const [contactName, setContactName] = useState<string>("");
+  const [contactRole, setContactRole] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [extractedData, setExtractedData] = useState<any | null>(null);
 
@@ -26,6 +28,8 @@ export default function FormSection() {
     const payload = {
       cnpj: cnpj.replace(/\D/g, ""),
       email: formDataFromDOM.get("email"),
+      contactName: formDataFromDOM.get("contactName"),
+      contactRole: formDataFromDOM.get("contactRole"),
     };
 
     if (payload.cnpj.length !== 14) {
@@ -46,6 +50,8 @@ export default function FormSection() {
         const multipartFormData = new FormData();
         multipartFormData.append("cnpj", payload.cnpj);
         multipartFormData.append("email", payload.email as string);
+        multipartFormData.append("contactName", payload.contactName as string);
+        multipartFormData.append("contactRole", payload.contactRole as string);
 
         // Adicionar arquivo se existir
         if (file) {
@@ -122,6 +128,7 @@ export default function FormSection() {
               aria-label="Formulário de simulação de economia de energia"
             >
 
+
               <div className="md:col-span-2">
                 <label htmlFor="cnpj" className="label">
                   CNPJ
@@ -136,6 +143,38 @@ export default function FormSection() {
                   onChange={(e) => setCnpj(formatCNPJ(e.target.value))}
                   required
                   aria-invalid={cnpj.replace(/\D/g, "").length !== 14}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contactName" className="label">
+                  Nome do responsável
+                </label>
+                <input
+                  id="contactName"
+                  name="contactName"
+                  type="text"
+                  className="input"
+                  placeholder="e.g. John Doe"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="contactRole" className="label">
+                  Cargo do responsável
+                </label>
+                <input
+                  id="contactRole"
+                  name="contactRole"
+                  type="text"
+                  className="input"
+                  placeholder="e.g. CFO"
+                  value={contactRole}
+                  onChange={(e) => setContactRole(e.target.value)}
+                  required
                 />
               </div>
 
