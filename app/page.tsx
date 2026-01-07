@@ -1,7 +1,6 @@
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
 import Benefits from "@/components/Benefits";
-import Footer from "@/components/Footer";
 import FormSection from "@/components/FormSection";
 
 export default function Home() {
@@ -11,7 +10,6 @@ export default function Home() {
       <HowItWorks />
       <Benefits />
       <FormSection />
-      <Footer />
     </main>
   );
 }

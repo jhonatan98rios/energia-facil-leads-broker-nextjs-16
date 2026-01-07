@@ -4,7 +4,6 @@ import LeadQualification from "@/components/comercializadoras/LeadQualification"
 import HowItWorksPartners from "@/components/comercializadoras/HowItWorksPartners";
 import IdealProfile from "@/components/comercializadoras/IdealProfile";
 import ComercializadorasForm from "@/components/comercializadoras/ComercializadorasForm";
-import Footer from "@/components/Footer";
 
 export default function ComercializadorasPage() {
   return (
@@ -17,7 +16,6 @@ export default function ComercializadorasPage() {
       <IdealProfile />
       <ComercializadorasForm />
 
-      <Footer />
     </main>
   );
 }

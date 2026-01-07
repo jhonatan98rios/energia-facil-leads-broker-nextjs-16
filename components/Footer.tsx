@@ -17,7 +17,7 @@ export default function Footer() {
           <h4 className="font-semibold text-gray-800 mb-3">Empresa</h4>
           <ul className="space-y-2 text-sm text-gray-600">
             <li><a href="/blog">Blog</a></li>
-            <li><a href="/duvidas">Dúvidas</a></li>
+            <li><a href="/faq">Dúvidas</a></li>
             <li><a href="/comercializadoras">Comercializadoras</a></li>
           </ul>
         </div>
