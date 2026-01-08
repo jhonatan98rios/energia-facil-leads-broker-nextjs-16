@@ -6,9 +6,10 @@ type ExtractResult = any;
 
 interface FileUploadProps {
   onExtracted: (result: ExtractResult, file: File) => void;
+  id?: string;
 }
 
-export default function FileUpload({ onExtracted }: FileUploadProps) {
+export default function FileUpload({ onExtracted, id }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isPending, startTransition] = useTransition();
   const [dragActive, setDragActive] = useState(false);
@@ -61,7 +62,7 @@ export default function FileUpload({ onExtracted }: FileUploadProps) {
   }
 
   return (
-    <div>
+    <div id={id}>
       <div
         onDragOver={(e) => {
           e.preventDefault();

@@ -93,12 +93,12 @@ export default function FormSection() {
   }
 
   return (
-    <section id="form" className="bg-neutral-100 py-24 px-6">
+    <section id="form" className="bg-gray-50 py-24 px-6" aria-labelledby="form-title">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-8 md:p-10">
-          <h2 className="text-3xl font-bold text-gray-900 text-center">
+          <h1 id="form-title" className="text-3xl font-bold text-gray-900 text-center">
             Simulação gratuita
-          </h2>
+          </h1>
 
           <p className="text-gray-600 text-center mt-2">
             Descubra se sua empresa pode economizar com o Mercado Livre de Energia.
@@ -112,8 +112,9 @@ export default function FormSection() {
                   ? "bg-green-50 text-green-700"
                   : "bg-red-50 text-red-700"
               }`}
-              role="status"
-              aria-live="polite"
+              role="alert"
+              aria-live="assertive"
+              id="form-status"
             >
               {message}
             </div>
@@ -126,9 +127,8 @@ export default function FormSection() {
               onSubmit={handleSubmit}
               className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6"
               aria-label="Formulário de simulação de economia de energia"
+              role="form"
             >
-
-
               <div className="md:col-span-2">
                 <label htmlFor="cnpj" className="label">
                   CNPJ
@@ -143,6 +143,7 @@ export default function FormSection() {
                   onChange={(e) => setCnpj(formatCNPJ(e.target.value))}
                   required
                   aria-invalid={cnpj.replace(/\D/g, "").length !== 14}
+                  aria-describedby={status === "error" ? "form-status" : undefined}
                 />
               </div>
 
@@ -178,7 +179,6 @@ export default function FormSection() {
                 />
               </div>
 
-
               {/* Valor da conta será extraído automaticamente da conta de luz */}
 
               <div className="md:col-span-2">
@@ -196,16 +196,17 @@ export default function FormSection() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="label">Anexar conta de luz</label>
+                <label className="label" htmlFor="file-upload">Anexar conta de luz</label>
 
                 <FileUpload
                   onExtracted={(data, uploadedFile) => {
                     setExtractedData(data);
                     setFile(uploadedFile);
                   }}
+                  id="file-upload"
                 />
 
-                <p className="helper">PDF, JPG, PNG — máximo 5MB por arquivo.</p>
+                <p className="helper" id="file-helper">PDF, JPG, PNG — máximo 5MB por arquivo.</p>
 
                 {extractedData && (
                   <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
@@ -219,6 +220,7 @@ export default function FormSection() {
                 type="submit"
                 disabled={isPending}
                 className="md:col-span-2 mt-4 bg-(--color-primary) text-white py-4 rounded-xl font-semibold text-lg hover:opacity-90 transition disabled:opacity-50"
+                aria-label="Enviar simulação de economia de energia"
               >
                 {isPending ? "Enviando..." : "Simular economia"}
               </button>
@@ -240,6 +242,7 @@ export default function FormSection() {
                   hover:bg-(--color-primary)
                   hover:text-white
                   transition"
+                aria-label="Nova simulação de economia de energia"
               >
                 Nova simulação
               </button>
